@@ -1,29 +1,29 @@
 #' @title Índice de Popularidade
 #' @name igov_pop
+#'
 #' @author Gabriel Bellé & Luiz Paulo Tavares
 #'
-#' @description Função para calcular o índice de popularidade
+#' @description Função para calcular o índice de Opinião Pública, isto é, mensurar o desempenho do governo com relação a sociedade civil.
 #'
-#' @param df Dataframe contendo as colunas \code{date}, \code{instituto}, \code{presidente}, \code{ótimo/bom}, \code{regular}, \code{ruim/péssimo}, \code{não sabe}.
-#' @param peso
+#' @param df Dataframe contendo as colunas \code{date}, \code{instituto}, \code{presidente} e o grau de aprovação da sociedade civil:
+#' \code{ótimo/bom},
+#' \code{regular},
+#' \code{ruim/péssimo},
+#' \code{não sabe}.
 #'
 #' @details O arquivo de input deve corresponder a base de dados já limpa, contendo colunas indicando as pesquisas de opinião referente aos institutos de pesquisa.
-#' \code{date} - coluna de datas no formato YYYY/MM/DD;
-#' \code{instituto} - referente ao instituto de pesquisa;
-#' \code{presidente} - representa o presidente da República no período da pesquisa;
-#' \code{ótimo/bom} - representa a % da população que considera o governo ótimo/bom;
-#' \code{regular} - representa a % da população que considera o governo regular;
-#' \code{ruim/péssimo} - representa a % da população que considera o governo ruim/péssimo;
-#' \code{não sabe} - representa a % da população não sabe/não opinou na pesquisa referente.
-#'
 #' @return O retorno é um dataframe agrupado por mês e governo contendo as colunas:
+#' \code{date},
+#' \code{media_bom},
+#' \code{media_regular},
+#' \code{indice_pop}.
 #'
 #'
 #' @examples
 #'
 #' \dontrun{
 #'
-#' igov_legis(df = df_cleaned, peso = 2)
+#' igov_pop <- Igov4i::igov_pop(df = pesq_pop)
 #'
 #' }
 #'
