@@ -4,7 +4,6 @@
 #' @description Função para o cálculo do índice Judiciário.
 #'
 #' @param df Dataframe contendo as colunas \code{date}, \code{gov}, \code{index}, \code{category}.
-#' @param peso Constante indicando a relação da importância entre ADIs coletivas e ADIs individuais para o índice.
 #' @author Gabriel Bellé & Luiz Paulo
 #'
 #' @details O arquivo de input deve corresponder a base de dados já limpa, contendo colunas indicando ocorrência das
@@ -30,30 +29,28 @@
 #'
 #' @export
 
-igov_jud <- function(df, peso) {
+igov_jud <- function(df) {
 
   #' O peso é a relação entre o indice_coletivo_favoravel e indice_individual_favoravel;
   #' A soma de ambos índices deve ser 100%, pois o índice deve variar entre 0 e 1.
 
-  peso_col = 1
-  peso_indv = 1/peso
 
   min_dt = min(df$date)
   max_dt = max(df$date)
 
-  sub_indv <- calc_new_sub_indice_judiciario(df, group_name = 'individual',
-                                             min_dt = min_dt, max_dt = max_dt)
-  sub_col <- calc_new_sub_indice_judiciario(df, group_name = 'coletiva',
-                                            min_dt = min_dt, max_dt = max_dt)
-  sub_agg <- calc_new_sub_indice_judiciario(df, group_name = 'agg',
-                                            min_dt = min_dt, max_dt = max_dt)
+  sub_indv <- Igov4i::aux_jud(df, group_name = 'individual',
+                                  min_dt = min_dt, max_dt = max_dt)
+  sub_col <- Igov4i::aux_jud(df, group_name = 'coletiva',
+                                 min_dt = min_dt, max_dt = max_dt)
+  sub_agg <- Igov4i::aux_jud(df, group_name = 'agg',
+                                 min_dt = min_dt, max_dt = max_dt)
 
   indice <- base::data.frame(sub_indv,
                              sub_col,
                              sub_agg) %>%
            dplyr::rowwise() %>%
-           dplyr::mutate(indice_judiciario = sum((coletiva_pct_favor * agg_pct_coletiva) * peso_col,
-                                            (individual_pct_favor * agg_pct_individual) * peso_indv, na.rm = T),
+           dplyr::mutate(indice_judiciario = sum((coletiva_pct_favor * agg_pct_coletiva),
+                                            (individual_pct_favor * agg_pct_individual), na.rm = T),
                          indice_judiciario = ifelse(if_all(contains('_pct_'), is.na),NA, indice_judiciario)) %>%
            dplyr::ungroup() %>%
            dplyr::select(date, gov, indice_judiciario, contains('_qtd_')) %>%

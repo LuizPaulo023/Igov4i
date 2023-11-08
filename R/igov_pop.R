@@ -6,16 +6,24 @@
 #' @description Função para calcular o índice de Opinião Pública, isto é, mensurar o desempenho do governo com relação a sociedade civil.
 #'
 #' @param df Dataframe contendo as colunas \code{date}, \code{instituto}, \code{presidente} e o grau de aprovação da sociedade civil:
-#' \code{ótimo/bom},
-#' \code{regular},
-#' \code{ruim/péssimo},
+#'
+#' \code{ótimo/bom};
+#'
+#' \code{regular};
+#'
+#' \code{ruim/péssimo};
+#'
 #' \code{não sabe}.
 #'
 #' @details O arquivo de input deve corresponder a base de dados já limpa, contendo colunas indicando as pesquisas de opinião referente aos institutos de pesquisa.
 #' @return O retorno é um dataframe agrupado por mês e governo contendo as colunas:
-#' \code{date},
-#' \code{media_bom},
-#' \code{media_regular},
+#'
+#' \code{date};
+#'
+#' \code{media_bom};
+#'
+#' \code{media_regular};
+#'
 #' \code{indice_pop}.
 #'
 #'
@@ -31,6 +39,18 @@
 
 
 igov_pop <- function(df = as.data.frame()){
+
+# Depara: número de institutos/volume de institutos
+
+depara_gov = df %>%
+             dplyr::select(date, instituto) %>%
+             stats::na.omit() %>%
+             dplyr::group_by(date) %>%
+             dplyr::summarise(numero_institutos = n(),
+                              institutos_distintos = n_distinct(instituto)) %>% dplyr::ungroup()
+
+
+# Calculando o índice de popularidade ========================================
 
   mean_pop <- df %>%
               dplyr::group_by(date, index) %>%
@@ -57,6 +77,14 @@ igov_pop <- function(df = as.data.frame()){
                                        'Temer',
                                        'Bolsonaro',
                                        'Lula III')))
+
+
+  # Join com volume de institutos ==============================================
+
+  mean_pop = dplyr::full_join(mean_pop, depara_gov, by = "date") %>%
+             dplyr::filter(date > "2002-12-01")
+
+  return(mean_pop)
 
 }
 

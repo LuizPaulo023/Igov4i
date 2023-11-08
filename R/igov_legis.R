@@ -1,5 +1,6 @@
 #' @title Índice Legislativo
 #' @name igov_legis
+#'
 #' @author Gabriel Bellé & Luiz Paulo Tavares
 #' @description Função para calcular o índice Legislativo.
 #'
@@ -8,38 +9,64 @@
 #'
 #' @details O arquivo de input deve corresponder a base de dados já limpa, contendo colunas indicando a quantidade de
 #' Medidas Provisórias (MPs) julgadas pelo poder Legislativo, classificadas em:
-#' \code{analisada} - Quantidade total de MPs analisadas;
-#' \code{pura} - Quantidade de MPs aprovadas sem modificação;
-#' \code{emendada} - Quantidade de MPs aprovadas com modificação;
-#' \code{sem_eficacia} - Quantidade de MPs não aprovadas.
-#' Além de conter as colunas:
+#'
 #' \code{date} - coluna de datas no formato YYYY/MM/DD;
-#' \code{gov} - Governo no qual houve o julgamento da MPs.
+#'
+#' \code{gov} - Governo no qual houve o julgamento da MPs;
+#'
+#' \code{analisada} - Quantidade total de MPs analisadas;
+#'
+#' \code{pura} - Quantidade de MPs aprovadas sem modificação;
+#'
+#' \code{emendada} - Quantidade de MPs aprovadas com modificação;
+#'
+#' \code{sem_eficacia} - Quantidade de MPs não aprovadas.
 #'
 #' @return O retorno é um dataframe agrupado por dia e governo contendo as colunas:
-#' \code{date} - índice do estabelecimento diário;
-#' \code{gov} - média do dia para o estabelecimento;
-#' \code{analisada} - Quantidade total de MPs analisadas;
-#' \code{pura} - Quantidade de MPs aprovadas sem modificação;
-#' \code{emendada} - Quantidade de MPs aprovadas com modificação;
-#' \code{sem_eficacia} - Quantidade de MPs não aprovadas.
-#' \code{indice_pura} - Índice considerando apenas MPs puras;
-#' \code{indice_emendada} - Índice considerando apenas MPs emendadas;
-#' \code{indice_legislativo} - Índice agregando o indice_pura com o indice_emendada, utilizando um peso.
-#
+#'
+#' \code{date};
+#'
+#' \code{gov};
+#'
+#' \code{soma_movel_analisada};
+#'
+#' \code{soma_movel_pura};
+#'
+#' \code{soma_movel_emendada};
+#'
+#' \code{soma_movel_sem_eficacia};
+#'
+#' \code{value_analisada};
+#'
+#' \code{value_pura};
+#'
+#' \code{value_emendada};
+#'
+#' \code{value_sem_eficacia};
+#'
+#' \code{pct_pura};
+#'
+#' \code{pct_emendada};
+#'
+#' \code{pct_sem_eficacia};
+#'
+#' \code{pura_peso};
+#'
+#' \code{emendada_peso};
+#'
+#' \code{indice_legislativo}.
 #'
 #' @examples
 #'
 #' \dontrun{
 #'
-#' igov_legis(df = df_cleaned, peso = 2)
+#' Igov4i::igov_legis(df = dataset_legis, peso = 2)
 #'
 #' }
 #'
 #' @export
 
 igov_legis <- function(df, peso) {
-
   #' O peso é a relação entre o indice_pura e indice_emendada;
   #' A soma de ambos índices deve ser 100%, pois o índice deve variar entre 0 e 1.
 
@@ -71,6 +98,10 @@ igov_legis <- function(df, peso) {
     dplyr::mutate(pura_peso = (pct_pura * peso_pura),
                   emendada_peso =  (pct_emendada * peso_emendada),
                   indice_legislativo = pura_peso + emendada_peso
-    )
+    ) %>% dplyr::mutate(value_aprovada = value_pura + value_emendada) %>%
+          dplyr::relocate(value_aprovada, .after = value_analisada)
+
+  return(indice_mm_ponderado)
+
 }
 
