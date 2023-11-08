@@ -1,0 +1,630 @@
+---
+title: "Script que chama as funções do índice governabilidade"
+output: html_notebook
+---
+
+# Paleta de cor 
+
+```{r}
+rm(list = ls())
+```
+
+
+```{r}
+paleta = list(azul_4i = "#4C94FF", 
+              laranja_4i = "#C4314B") 
+```
+
+# Configurações do usuário
+
+```{r}
+#Coleta o nome de usuário
+user <- Sys.getenv('USERNAME')
+user_path <- paste0('C:/Users/', user, '/')
+
+
+if(user == 'GabrielBelle') {
+  git_path <- paste0(user_path,
+                   'Documents/Trabalhos/git/alternative-data/')
+
+  alt_path <- paste0(user_path, 
+                     '4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/')
+  
+}else if (user == 'LuizPauloTavaresGonç') {
+ git_path <- paste0(user_path,
+                   'Documents/GitHub/alternative-data/governabilidade/alternative-data/')
+
+  alt_path <- paste0(user_path,
+                     '4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/')
+}
+
+```
+
+# Packages 
+
+
+```{r}
+# Puxando a função user.packages 
+source(paste0(git_path,
+              'governabilidade/user_packages.R'))
+
+# Packages Utilizados 
+
+packages <- c("tidyverse",  
+              "ggtext",
+              "ggside", 
+              "lubridate",
+              "RColorBrewer", 
+              "scales")
+
+# Instalando/Liberando 
+
+library_packages(packages)
+```
+# Tema 4i - theme()
+
+```{r}
+thema = theme(legend.position = "bottom",
+              ggside.panel.scale = 0.2,
+        panel.background = element_rect(fill = "transparent"),
+        #strip.text = element_text(face="bold", size=9),
+        strip.background = element_rect(fill = "#f5f5f5"), 
+                legend.background = element_blank(),
+                axis.text.x = element_text(angle = 90, 
+                                           hjust = 1, 
+                                           size = 16),
+                axis.text.y = element_text(size = 14), 
+                strip.text.x = element_text(size = 14),
+                strip.text.y = element_text(size = 17),
+                axis.title.y = element_text(size = 11L),
+                legend.text = element_text(color = "#0A2240", 
+                                           size =  15),
+                legend.key = element_rect(fill = "transparent",
+                                      colour = "transparent"),
+            legend.key.size = unit(0.1, 'cm'),
+            legend.margin = margin(-0.2, unit = "cm"),
+            rect = element_rect(fill = "transparent"),
+            plot.title.position = "plot",
+            plot.margin = ggplot2::margin(1,1,1,1, 
+                                  unit = "lines"),
+            plot.caption.position =  "plot",
+            # plot.caption = element_markdown(color = "black",
+            #                                 size = 12),
+            plot.title = element_text(color = "black", 
+                                      size = 18,
+                                      face = 'bold',
+                                      margin = ggplot2::margin(b = 6)),
+            plot.subtitle = element_text(color = "#616060",
+                                         size = 14, 
+                                         margin = ggplot2::margin(b = 6)),
+            panel.grid.major = element_line(color = "#e9e9e9"),
+            panel.grid.minor = element_blank(),
+            panel.grid.major.x = element_blank(),
+            panel.grid  = element_blank(),
+            axis.ticks = element_blank(),
+            plot.background = element_rect(fill = "transparent", 
+                                           colour = NA))+
+  theme(strip.text.x = element_text(margin = margin(.1, 1, .1, 1, "cm")))
+
+```
+
+# Chamando as funções 
+
+```{r}
+# Judiciário 
+source(paste0(git_path,
+              'governabilidade/fct_new_calc_sub_indice_judiciario.R'))
+
+source(paste0(git_path,
+              'governabilidade/fct_new_calc_judiciario.R'))
+
+source(paste0(git_path,
+              'governabilidade/fct_new_calc_judiciario_mistura.R'))
+
+source(paste0(git_path,
+              'governabilidade/fct_new_calc_judiciario_mistura_sub.R'))
+
+```
+
+# Limpeza 
+
+```{r}
+data_raw_judiciario <-  readxl::read_excel(paste0(alt_path,
+                                      'governabilidade/input/',
+                                      'GOV index JUD - completo.xlsx'),
+                               sheet = 1) 
+  
+```
+
+```{r}
+
+judiciario <- data_raw_judiciario %>% 
+  janitor::clean_names() %>% 
+  #Remove ADI com a decisão feita antes da distribuição
+  filter((data_distribuicao <= data_da_decisao) | index == 0) %>% 
+  rename(data_decisao = data_da_decisao) %>% 
+  mutate(
+    coletiva = ifelse(coletiva == 0, 0, 1),
+    gov_distribuicao = case_when(
+      data_distribuicao >= '1995-01-01' &
+        data_distribuicao < '2003-01-01' ~ 'FHC',
+          data_distribuicao >= '2003-01-01' &
+            data_distribuicao < '2007-01-01' ~ 'Lula',
+             data_distribuicao >= '2007-01-01' &
+               data_distribuicao < '2011-01-01' ~ 'Lula',
+                  data_distribuicao >= '2011-01-01' &
+                     data_distribuicao < '2015-01-01' ~ 'Dilma',
+                       data_distribuicao >= '2015-01-01' &
+                         data_distribuicao < '2016-06-01' ~ 'Dilma',
+                           data_distribuicao >= '2016-06-01' &
+                              data_distribuicao < '2019-01-01' ~ 'Temer',
+                               data_distribuicao >= '2019-01-01' & 
+                                data_distribuicao < '2023-01-01' ~ 'Bolsonaro', 
+                                data_distribuicao >= '2023-01-01' ~ 'Lula III'),
+    gov_decisao = case_when(
+      data_decisao >= '1995-01-01' &
+        data_decisao < '2003-01-01' ~ 'FHC',
+          data_decisao >= '2003-01-01' &
+            data_decisao < '2007-01-01' ~ 'Lula',
+             data_decisao >= '2007-01-01' &
+               data_decisao < '2011-01-01' ~ 'Lula',
+                  data_decisao >= '2011-01-01' &
+                     data_decisao < '2015-01-01' ~ 'Dilma',
+                       data_decisao >= '2015-01-01' &
+                         data_decisao < '2016-06-01' ~ 'Dilma',
+                           data_decisao >= '2016-06-01' &
+                              data_decisao < '2019-01-01' ~ 'Temer',
+                               data_decisao >= '2019-01-01' & 
+                                data_decisao < '2023-01-01' ~ 'Bolsonaro', 
+                                data_decisao >= '2023-01-01' ~ 'Lula III')
+    ) %>% 
+  select(-individual) 
+  #Remove obs antes de FHC
+  #filter(data_distribuicao >= '1995-01-01')  
+  #Decisao mesmo gov de distribuição
+  #filter((gov_decisao == gov_distribuicao) | index == 0)
+```
+
+```{r}
+judiciario_sem_dup <- judiciario %>% 
+  #Remove ADIs que foram julgadas posteriormente novamente
+  #Mantem apenas a última decisão
+  mutate(tempo = as.integer(difftime(data_decisao,
+                                     data_distribuicao,
+                                     units = "weeks")),
+         adi = str_remove(adi, "\\*+")) %>% 
+  group_by(adi) %>% 
+  filter(tempo == max(tempo)) %>% 
+  ungroup() 
+```
+
+
+```{r}
+#Adicionar o gov começando na distribuição
+dt_gov_distribuicao <- judiciario_sem_dup %>% 
+  select(data_distribuicao, data_decisao, gov_distribuicao) %>% 
+  filter(data_distribuicao < min(data_decisao)) %>% 
+  filter(!is.na(gov_distribuicao)) %>% 
+  rename(date = data_distribuicao, 
+         gov = gov_distribuicao) %>% 
+  select(-data_decisao) %>% 
+  distinct()
+```
+
+```{r}
+
+qtd_julgada_mes_tempo_medio <- judiciario_sem_dup %>% 
+  filter(index != 0) %>% 
+  select(-coletiva) %>% 
+  mutate(msmo_gov = ifelse(gov_distribuicao == gov_decisao, 'Governo Atual', 'Governo Anterior'),
+         msmo_gov = ifelse(is.na(msmo_gov), 'Governo Anterior', msmo_gov)) %>% 
+  rename(date = data_decisao,
+         gov = gov_decisao) %>% 
+  select(-ends_with('distribuicao')) %>% 
+  mutate(date = lubridate::floor_date(date, 'month')) %>% 
+  group_by(date, gov, msmo_gov) %>% 
+  summarise(qtd = n(),
+            tempo_medio = mean(tempo)) %>% 
+  ungroup() %>% 
+  bind_rows(dt_gov_distribuicao) %>% 
+  arrange(date) 
+```
+
+# Índice Judiciário
+
+```{r}
+bd_index <- judiciario_sem_dup %>% 
+  select(data_decisao, gov_decisao, index, coletiva) %>% 
+  rename(date = data_decisao,
+         gov = gov_decisao, 
+         category = coletiva) %>% 
+  #Remove ADI sem decisão
+  filter(index != 0) %>% 
+  bind_rows(dt_gov_distribuicao) %>% 
+  mutate(
+    index = ifelse(index == -1, 'contra', 'favor'),
+    category = ifelse(category == 1, 'coletiva', 'individual'),
+    date = lubridate::floor_date(date, 'month')
+  ) %>% 
+  arrange(date)
+
+#Não atribui peso diferente entre idv e col
+#Retorna alem do índice, qtd de ADi julgada no mes por favor/contra e indv/col 
+indice_judiciario <- calc_new_judiciario(bd_index, peso = 1)
+```
+
+# Estoque de ADIs 
+
+```{r}
+estoque = tibble()
+  
+for (dt in seq(min(
+  as.Date(lubridate::floor_date(judiciario_sem_dup$data_distribuicao,
+                                'months'))),
+               max(
+  as.Date(lubridate::floor_date(judiciario_sem_dup$data_distribuicao,
+                                'months'))),
+               by = 'month')) {
+  
+  dt <- as.Date(dt, origin = '1970-01-01') %>% 
+    lubridate::ceiling_date('months') - days(1)
+  
+  inday = judiciario_sem_dup %>% 
+    filter(data_distribuicao <= dt)
+  
+  gov_inday <- inday %>% 
+    tail(1) %>% 
+    pluck('gov_distribuicao') 
+  
+  qtd_distribuido <- inday %>% 
+    nrow()
+  
+  qtd_decidido <- inday %>% 
+    filter(data_decisao <= dt) %>% 
+    nrow()
+  
+  # if(qtd_decidido == 0) {
+  #   qtd_decidido_fav = 0
+  #   qtd_decidido_contra = 0
+  # } else {
+  #   qtd_decidido_fav <- inday %>% 
+  #     #filter(gov_decisao == gov_inday) %>% 
+  #     filter(data_decisao <= dt) %>% 
+  #     filter(index == 1) %>% 
+  #     nrow()
+  # 
+  #   qtd_decidido_contra <- inday %>% 
+  #     #filter(gov_decisao == gov_inday) %>% 
+  #     filter(data_decisao <= dt) %>% 
+  #     filter(index == -1) %>% 
+  #     nrow()
+  # }
+  # 
+  # qtd_decidido_idv <- inday %>% 
+  #   filter(data_decisao <= dt) %>% 
+  #   filter(coletiva == 0) %>% 
+  #   nrow()
+  # 
+  # qtd_decidido_col <- inday %>% 
+  #   filter(data_decisao <= dt) %>% 
+  #   filter(coletiva == 1) %>% 
+  #   nrow()
+  
+  estoque = estoque %>% 
+    bind_rows(tibble(date = lubridate::floor_date(dt, 'months'),
+                     distribuido_tot = qtd_distribuido,
+                     decidido_tot = qtd_decidido,
+                     ))
+  
+}
+```
+
+```{r}
+
+estoque_semdec <- estoque %>% 
+  # group_by(month = lubridate::floor_date(date, 'month')) %>% 
+  # filter(date == max(date)) %>% 
+  ungroup() %>% 
+  #select(-date) %>% 
+  #rename(date = month) %>% 
+  right_join(indice_judiciario) %>% 
+  arrange(date) %>% 
+  relocate(date, gov, indice_judiciario) %>% 
+  fill(names(estoque)) %>% 
+  mutate(
+    sem_decisao = distribuido_tot - decidido_tot
+  ) %>% 
+  relocate(sem_decisao, .after = 'indice_judiciario')
+```
+## Exporta os dados
+
+```{r}
+output_completo <- estoque_semdec %>% 
+  left_join(qtd_julgada_mes_tempo_medio %>% 
+              pivot_wider(names_from = msmo_gov,
+                          values_from = c(qtd, tempo_medio)) %>% 
+              select(-ends_with('_NA'))) %>% 
+  rename(
+    estoque_sem_decisao = sem_decisao,
+    estoque_distribuicao = distribuido_tot,
+    estoque_decisao = decidido_tot,
+    ADI_favor_individual_mes = individual_qtd_favor,
+    ADI_contra_individual_mes = individual_qtd_contra,
+    ADI_favor_coletiva_mes = coletiva_qtd_favor,
+    ADI_contra_coletiva_mes = coletiva_qtd_contra,
+    ADI_total_distribuicao_gov_anterior = `qtd_Governo Anterior`,
+    ADI_total_distribuicao_gov_atual = `qtd_Governo Atual`,
+    tempo_medio_decisao_gov_anterior = `tempo_medio_Governo Anterior`,
+    tempo_medio_decisao_gov_atual = `tempo_medio_Governo Atual`,
+  )
+
+getwd()
+
+writexl::write_xlsx(output_completo,
+                    paste0(alt_path,
+                           'governabilidade/output/',
+                           'indice_judiciario_outubro.xlsx'))
+```
+
+# Visualização - Evolução do índice com qtd de ADIs favoraveis - plot01
+
+```{r}
+
+estoque_semdec2 = estoque_semdec %>% 
+  dplyr::mutate(type2 = "") %>%
+         filter(gov != "FHC") %>% 
+  select(c(date, gov, indice_judiciario, ends_with('_favor'))) %>% 
+  pivot_longer(-c(date, gov, indice_judiciario)) %>%
+  mutate(name = ifelse(name == 'individual_qtd_favor', 'Favorável Individual', 
+                       'Favorável Coletiva'),
+         type = 'Índice Judiciário',
+         name = factor(name,
+                       levels = c('Favorável Individual', 'Favorável Coletiva')),
+         gov = factor(
+           gov,
+           levels = c('Lula', 'Dilma', 'Temer', 'Bolsonaro', 'Lula III')),
+         date = as.Date(date, format = '%Y/%m/%d')) 
+
+
+estoque_semdec2 %>% 
+      dplyr::mutate(type2 = "") %>% 
+  ggplot2::ggplot() +
+  aes(x = date, y = indice_judiciario) +
+  geom_line(size = 1.0) +
+   facet_grid(~gov, 
+              space = "free_x", 
+              scales = "free_x") +
+  scale_colour_manual(values = c(paleta$azul_4i, paleta$laranja_4i)) +
+  geom_xsidehistogram(mapping = aes(y = value, fill = name), 
+                      stat = "identity", position = "identity", 
+                      orientation = "x")+
+       scale_ysidex_continuous(position = "bottom")+
+       ggside(collapse = "x", x.pos = "bottom",
+              scales = "free_x") + 
+  scale_fill_manual(values = c(`Favorável Coletiva` = paleta$azul_4i,
+                               `Favorável Individual` = paleta$laranja_4i)) +
+  labs(
+    #title = "Índice de revisão judicial (2003 - 2023)",
+    # subtitle = "Representa a agenda do Executivo e as ações diretas de inconstitucionalidade julgadas",
+    #caption = "Fonte: Supremo Tribunal Federal, organização 4i.",
+    y = "", 
+    x = "", 
+    fill = ""
+    ) +
+        ylim(0,1)+
+        scale_xsidey_continuous(minor_breaks = NULL)+
+  scale_y_continuous(labels = percent_format(), 
+                                 limits = c(0,1))+
+        scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '6 month',
+                     expand = c(0.05,1))+ thema
+
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Judiciario/",
+    "/plot_jud.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+# Visualização - Evolução da Quantidade de ADIs julgadas - plot02
+
+```{r}
+estoque_semdec3  = estoque_semdec%>% 
+  mutate(contra = coletiva_qtd_contra + individual_qtd_contra,
+         favor = coletiva_qtd_favor + individual_qtd_favor) %>% 
+  select(c(date, gov, contra, favor)) %>% 
+  pivot_longer(c(contra, favor)) %>% 
+  mutate(type = 'Índice Judiciário',
+         gov = factor(
+           gov,
+           levels = c('FHC', 'Lula', 'Dilma', 'Temer', 'Bolsonaro')),
+         date = as.Date(date, format = '%Y/%m/%d'),
+         name = ifelse(name == 'contra',
+                       'ADIs Contrárias', 'ADIs Favoráveis')) 
+
+estoque_semdec3 %>% 
+dplyr::filter(gov != "FHC") %>% 
+       mutate(type2 = "") %>% 
+  ggplot2::ggplot() +
+  aes(x = date, y = value, fill = name) +
+  geom_col() +
+  facet_grid(~ gov,  scale = 'free_x', space = "free_x") +
+  scale_fill_manual(values = c(`ADIs Favoráveis` = paleta$azul_4i,
+                               `ADIs Contrárias` = paleta$laranja_4i)) + 
+  labs(title = "Comparativo entre decisões favoráveis e contrárias em cada governo
+       ", 
+       caption = "Fonte: Supremo Tribunal Federal, organização metodológica 4i.", 
+       y = "",
+       x = "", 
+       fill = "") +
+        scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '6 month',
+                     expand = c(0.05,1))+thema
+
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Judiciario/v8",
+    "/plot02_jud.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+# Visualização - % ADIs julgadas que foram criadas em gov anterior - plot03
+
+```{r}
+qtd_julgada_mes_tempo_medio %>% 
+  select(-tempo_medio) %>% 
+  pivot_wider(names_from = msmo_gov, values_from = qtd) %>% 
+  rowwise() %>% 
+  mutate(Total = sum(`Governo Atual`,`Governo Anterior`, na.rm=T),
+         `Governo Atual` = ifelse(is.na(`Governo Atual`),
+                                  0, `Governo Atual`),
+         `Governo Anterior` = ifelse(is.na(`Governo Anterior`),
+                                     0, `Governo Anterior`),
+         `Governo Atual` = `Governo Atual`/Total,
+         `Governo Anterior` = `Governo Anterior`/Total,
+         across(where(is.numeric), ~ifelse(is.nan(.x), NA, .x)),
+         gov = factor(
+           gov,
+           levels = c('FHC', 'Lula', 'Dilma', 'Temer', 'Bolsonaro')),
+         date = as.Date(date, format = '%Y/%m/%d'),
+         type = 'Época da distribuição'
+         ) %>% 
+  select(-c(Total, 'NA')) %>% 
+  pivot_longer(-c(date, gov, type)) %>% 
+  mutate(value = ifelse(is.na(value), 0, value)) %>% 
+  ggplot2::ggplot() +
+  aes(x = date, y = value, fill = name) +
+  geom_col(width = 50) +
+  facet_grid(type ~ gov, scale = 'free_x', space = 'free_x') +
+  scale_fill_manual(values = c(`Governo Atual` = paleta$azul_4i,
+                               `Governo Anterior` = paleta$laranja_4i)) +
+  labs(title = "",
+       y = "", 
+       x = "")+
+        scale_xsidey_continuous(minor_breaks = NULL)+ 
+        scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '6 month',
+                     expand = c(0.05,1)) +
+        scale_y_continuous(labels = percent_format(), 
+                           limits = c(0,1))+thema
+  
+
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Judiciario/v7",
+    "/plot03_gg4i_jud.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+# Visualização - Tempo médio do julgamento por data de criação - plot04
+
+```{r}
+bd_tempo <- qtd_julgada_mes_tempo_medio %>% 
+  select(-qtd) %>% 
+  mutate(gov = factor(
+           gov,
+           levels = c('FHC', 'Lula', 'Dilma', 'Temer', 'Bolsonaro')),
+         date = as.Date(date, format = '%Y/%m/%d')
+         ) 
+
+bd_tempo_final <- bd_tempo %>% 
+  filter(!is.na(msmo_gov)) %>% 
+  bind_rows(bd_tempo %>% 
+              filter(is.na(msmo_gov)) %>% 
+              mutate(msmo_gov = 'Governo Atual')) %>% 
+  bind_rows(bd_tempo %>% 
+              filter(is.na(msmo_gov)) %>% 
+              mutate(msmo_gov = 'Governo Anterior')) %>% 
+  arrange(date)
+
+
+bd_tempo_final %>% 
+  dplyr::filter(gov != "FHC") %>% 
+  ggplot2::ggplot() +
+  aes(x = date, y = tempo_medio) +
+  geom_col(width = 2, color = 'black') +
+  facet_grid(msmo_gov ~ gov, scale = 'free_x', space = 'free_x') +
+  labs(title = "Tempo (em semanas) para o julgamento das ADIs por mês de decisão",
+       subtitle = "Representa a força do acervo sobre os processos propostos durante o próprio governo
+       ",
+caption = "Fonte: Supremo Tribunal Federal, organização metodológica 4i.",
+       y = "",
+       x = "")+
+        scale_xsidey_continuous(minor_breaks = NULL)+ 
+        scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '6 month',
+                     expand = c(0.05,1))+thema
+
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Judiciario/v8",
+    "/plot04_gg4i_jud.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+
+# Visualização - Evolução do Estoque de ADIs não Julgada - plot05
+
+```{r}
+estoque_semdec %>% 
+  filter(gov != "FHC") %>% 
+  select(c(date, gov, sem_decisao)) %>% 
+  mutate(type = '',
+         gov = factor(
+           gov,
+           levels = c('Lula', 'Dilma', 'Temer', 'Bolsonaro')),
+         date = as.Date(date, format = '%Y/%m/%d')) %>% 
+  ggplot2::ggplot() +
+  aes(x = date, y = sem_decisao) +
+  geom_line(size = 1.0) +
+  facet_grid(~ gov,  scale = 'free_x', space = "free_x") +
+  labs(title = "Tamanho do acervo de ações diretas de inconstitucionalidade não julgadas
+       ",
+       caption = "Fonte: Supremo Tribunal Federal, organização metodológica 4i.",
+       y = "",
+       x = "") +
+        ylim(0,400)+
+        scale_xsidey_continuous(minor_breaks = NULL)+ 
+        scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '6 month',
+                     expand = c(0.05,1))+ thema
+  
+  
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Judiciario/v8",
+    "/plot05_jud.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+

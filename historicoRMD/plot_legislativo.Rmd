@@ -1,0 +1,411 @@
+---
+title: "Gera índice legislativo e plots"
+output: html_notebook
+---
+
+```{r}
+rm(list = ls())
+```
+
+
+# Paleta de cor 
+
+```{r}
+paleta = list(azul_4i = "#4C94FF", 
+              laranja_4i = "#C4314B") 
+```
+
+# Configurações do usuário
+
+```{r}
+#Coleta o nome de usuário
+user <- Sys.getenv('USERNAME')
+user_path <- paste0('C:/Users/', user, '/')
+
+
+if(user == 'GabrielBelle') {
+  git_path <- paste0(user_path,
+                   'Documents/Trabalhos/git/alternative-data/')
+
+  alt_path <- paste0(user_path, 
+                     '4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/')
+  
+}else if (user == 'LuizPauloTavaresGonç') {
+ git_path <- paste0(user_path,
+                   'Documents/GitHub/alternative-data/governabilidade/alternative-data/')
+
+  alt_path <- paste0(user_path,
+                     '4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/')
+}
+```
+
+# pacote - plots gg4i 
+
+```{r}
+#source(paste0(git_path,
+#              'governabilidade/user_gg4i.R'))
+
+#user_gg4i(ini_path = "C:/Users/LuizPauloTavaresGonç/OneDrive - 4intelligence/Área de Trabalho/4intelligence/R.Setorial/relatorio_setoriais/laticinios/Script")
+  
+```
+# Packages 
+
+```{r}
+# Puxando a função user.packages 
+source(paste0(git_path,
+              'governabilidade/user_packages.R'))
+
+# Packages Utilizados 
+
+packages <- c("tidyverse",  
+              "ggside", 
+              "lubridate",
+              "RColorBrewer", 
+              "scales")
+
+# Instalando/Liberando 
+library_packages(packages)
+
+```
+
+
+# Tema 4i - theme()
+# Padronizado pode ser utilizado em todos os plotes desenvolvidos 
+
+```{r}
+
+thema = theme(legend.position = "bottom",
+              ggside.panel.scale = 0.2,
+        panel.background = element_rect(fill = "transparent"),
+        #strip.text = element_text(face="bold", size=9),
+        strip.background = element_rect(fill = "#f5f5f5"), 
+                legend.background = element_blank(),
+                axis.text.x = element_text(angle = 90, 
+                                           hjust = 1, 
+                                           size = 16),
+                axis.text.y = element_text(size = 14), 
+                strip.text.x = element_text(size = 14),
+                strip.text.y = element_text(size = 17),
+                axis.title.y = element_text(size = 11L),
+                legend.text = element_text(color = "#0A2240", 
+                                           size =  15),
+                legend.key = element_rect(fill = "transparent",
+                                      colour = "transparent"),
+            legend.key.size = unit(0.1, 'cm'),
+            legend.margin = margin(-0.2, unit = "cm"),
+            rect = element_rect(fill = "transparent"),
+            plot.title.position = "plot",
+            plot.margin = ggplot2::margin(1,1,1,1, 
+                                  unit = "lines"),
+            plot.caption.position =  "plot",
+            # plot.caption = element_markdown(color = "black",
+            #                                 size = 12),
+            plot.title = element_text(color = "black", 
+                                      size = 18,
+                                      face = 'bold',
+                                      margin = ggplot2::margin(b = 6)),
+            plot.subtitle = element_text(color = "#616060",
+                                         size = 14, 
+                                         margin = ggplot2::margin(b = 6)),
+            panel.grid.major = element_line(color = "#e9e9e9"),
+            panel.grid.minor = element_blank(),
+            panel.grid.major.x = element_blank(),
+            panel.grid  = element_blank(),
+            axis.ticks = element_blank(),
+            plot.background = element_rect(fill = "transparent", 
+                                           colour = NA))+
+  theme(strip.text.x = element_text(margin = margin(.1, 1, .1, 1, "cm")))
+
+```
+
+# Chamando as funções 
+
+```{r}
+# Legislativo 
+
+source(paste0(git_path,
+              'governabilidade/fct_new_calc_legislativo.R'))
+
+```
+
+# Limpeza
+
+```{r}
+## import dataset 
+legislativo_raw <- suppressMessages(readxl::read_excel(paste0(alt_path,
+                    'governabilidade/input/',
+                      'DB_GOV.xlsx'),sheet = 3))
+
+
+# Limpando e organizando dataset 
+
+base_legislativo <- legislativo_raw %>% 
+                    janitor::clean_names() %>% 
+                    dplyr::mutate(date = paste(anos, mes, '01', sep = '-'),
+                                  date = as.Date(date)) %>% 
+                           select(c(date, starts_with('mp_'))) %>% 
+                           select(-mp_vs_analisadas_16) %>% 
+                           rename(analisada = 2,
+                                  pura = 3,
+                                  emendada = 4,
+                                  sem_eficacia = 5) %>% 
+                           mutate(gov = case_when(
+                                    date >= '1995-01-01' &
+                                        date < '2003-01-01' ~ 'FHC',
+                                          date >= '2003-01-01' &
+                                            date < '2007-01-01' ~ 'Lula I',
+                                             date >= '2007-01-01' &
+                                               date < '2011-01-01' ~ 'Lula II',
+                          date >= '2011-01-01' &
+                             date < '2015-01-01' ~ 'Dilma I',
+                               date >= '2015-01-01' &
+                                 date < '2016-06-01' ~ 'Dilma II',
+                                   date >= '2016-06-01' &
+                                      date < '2019-01-01' ~ 'Temer',
+                                       date >= '2019-01-01' & 
+                                        date < '2023-01-01' ~ 'Bolsonaro', 
+                                        date >= '2023-01-01' ~ "Lula III"))
+```
+
+```{r}
+## import dataset 
+legislativo_raw <- suppressMessages(readxl::read_excel(paste0(alt_path,
+                    'governabilidade/input/',
+                      'indice_legislativo_correto.xlsx')))
+
+
+# Limpando e organizando dataset 
+
+base_legislativo <- legislativo_raw %>% 
+                    janitor::clean_names() %>% 
+                    rename(analisada = 3,
+                           pura = 4,
+                           emendada = 5,
+                           sem_eficacia = 6) 
+```
+
+# Calcula o índice 
+
+```{r}
+indice_legislativo_new <- calc_legislativo_new(df = base_legislativo,
+                                               peso = 2) %>% 
+                           dplyr::filter(gov != 'FHC')
+
+output_legislativo <- indice_legislativo_new %>% 
+  select(date, gov,
+         starts_with('value'), ends_with('peso'),
+         indice_legislativo) %>% 
+  rename(qtd_mp_analisada = value_analisada,
+         qtd_mp_pura = value_pura,
+         qtd_mp_emendada = value_emendada,
+         qtd_mp_sem_eficacia = value_sem_eficacia,
+         indice_pura = pura_peso,
+         indice_emendada = emendada_peso)
+
+writexl::write_xlsx(output_legislativo,
+                    paste0(
+                      alt_path,
+                      '/governabilidade/output/Data/junho_2023/',
+                      'indice_legislativo.xlsx'))
+```
+
+# Visualização - Organização dos dados
+
+## Duplica pura e emendada para gerar composição
+
+```{r}
+
+bd_composicao = indice_legislativo_new %>% 
+  dplyr::select(date, gov, indice_legislativo, pura_peso, emendada_peso) %>%
+  mutate(
+    pura_peso = ifelse(is.na(pura_peso), 0, pura_peso), 
+    emendada_peso = ifelse(is.na(emendada_peso), 0, emendada_peso),
+    pura_composicao = pura_peso,
+    emendada_composicao = emendada_peso) %>% 
+  rowwise() %>% 
+  mutate(indice_legislativo = sum(pura_peso+emendada_peso, na.rm = T)) %>% 
+  tidyr::pivot_longer(cols = indice_legislativo:emendada_composicao,
+                      names_to = "indices") %>% 
+  dplyr::mutate(
+    type = case_when(
+      indices == "pura_peso" ~ "Pura", 
+      indices == "emendada_peso" ~ "Emendada", 
+      indices == "indice_legislativo" ~ "Índice Legislativo", 
+      indices == "pura_composicao" ~ "Índice", 
+      indices == "emendada_composicao" ~ "Índice"), 
+    gov = factor(gov, levels = c("Lula I",
+                                 "Lula II",
+                                 "Dilma I",
+                                 'Dilma II',
+                                 "Temer", 
+                                 "Bolsonaro", 
+                                 "Lula III")),
+    type = factor(type, levels = c("Índice Legislativo",
+                                   "Índice", 
+                                   "Pura", 
+                                   "Emendada")),
+    indices = factor(indices,
+                     levels = c("indice_legislativo", 
+                                "pura_peso",
+                                "emendada_peso", 
+                                "pura_composicao",
+                                "emendada_composicao"), 
+                     labels = c("Índice Legislativo", 
+                                "Pura", 
+                                "Emendada", 
+                                "Pura",
+                                "Emendada"))) %>% 
+  rename(value_indices = value) %>% 
+  mutate(value_indices = ifelse(
+    value_indices == 0.00000000, NA, value_indices))
+```
+
+## Organiza coluna de qtd de MPs
+```{r}
+
+bd_mps = indice_legislativo_new %>% 
+  dplyr::select(date,
+                value_pura,
+                value_emendada,
+                value_sem_eficacia) %>% 
+  tidyr::pivot_longer(-c(date), 
+                      names_to = "mps") %>% 
+  dplyr::full_join(
+    bd_composicao %>% 
+      filter(type == "Índice Legislativo")) %>%
+  mutate(mps = factor(mps,
+                      levels = c("value_pura",
+                                 "value_emendada",
+                                 'value_sem_eficacia'), 
+                      labels = c("Pura",
+                                 "Emendada",
+                                 'Sem Eficácia')),
+         date = as.Date(date)) 
+```
+
+## Visualização - Evolução do índice com qtd de MPs favoraveis - plot01
+
+```{r}
+
+bd_mps %>% 
+  filter(mps != 'Sem Eficácia') %>% 
+  #filter(date<'2023-01-01') %>% 
+ggplot2::ggplot()+ 
+         aes(x = date, y = value_indices)+
+         geom_line(size = 1.0)+
+         geom_xsidehistogram(mapping = aes(y = value, 
+                                           fill = mps), 
+                             stat = "identity", 
+                             position = "identity")+
+        scale_ysidex_continuous(position = "bottom")+
+        ggside(collapse = "x",
+               x.pos = "bottom")+
+        scale_fill_manual(values = c(Pura = paleta$azul_4i, 
+                       Emendada = paleta$laranja_4i))+
+        facet_grid(~gov, 
+                   space = "free_x", 
+                   scales = "free_x")+
+        labs(
+          y = "", 
+          x = "", 
+          fill = "", 
+          caption = "Fonte: Congresso Nacional, organização metodológica 4i."
+          )+
+              scale_xsidey_continuous(minor_breaks = NULL)+ 
+              scale_y_continuous(labels = percent_format(), 
+                                 limits = c(0,1))+
+              scale_x_date(date_labels = "%Y-%m",
+                     date_breaks = '1 year',
+                     date_minor_breaks = '3 month',
+                     expand = c(0.05,1))+ thema
+
+# Save Plot 
+
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Legislativo/",
+    "/plot_legis.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+
+```
+
+
+## Visualização - Evolução da QTD de MPs julgadas - plot02
+
+```{r}
+bd_mps %>%  
+  ggplot2::ggplot() + 
+  aes(x = date, y = value, fill = mps)+
+  geom_col() +
+  scale_fill_manual(values = c(Pura = paleta$azul_4i,
+                               Emendada = paleta$laranja_4i,
+                               `Sem Eficácia` = "gray")) +
+  facet_grid(~gov, scale = 'free_x', space = "free_x")+
+  labs(#title = "", 
+       #subtitle = "",
+       #caption = "",
+       y = "", 
+       x = "", 
+       fill = "")+
+        scale_x_date(date_labels = "%Y-%m",
+                   date_breaks = '1 year',
+                   date_minor_breaks = '1 year',
+                   expand = c(0.05,1))+ thema
+
+# Save plot 
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Legislativo/v7_atualizada",
+    "/plot02_legis.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+
+```
+
+## Visualização - Composição dos índices - plot03
+
+```{r}
+bd_composicao %>% 
+    dplyr::filter(type != "Índice Legislativo") %>% 
+    ggplot2::ggplot()+ 
+              aes(x = date, y = value_indices, fill = indices)+
+              geom_col(width = 33)+
+              scale_fill_manual(values = c(Pura = paleta$azul_4i, 
+                                           Emendada = paleta$laranja_4i)) +
+              facet_grid(type~gov,  scale = 'free_x', space = "free_x")+
+              labs(#title = "", 
+                   #subtitle = "",
+                   #caption = "",
+                   y = "", 
+                   x = "", 
+                   fill = "")+
+                    scale_y_continuous(labels = percent_format(), 
+                                       limits = c(0,1))+
+                    scale_x_date(date_labels = "%Y-%m",
+                               date_breaks = '1 year',
+                               date_minor_breaks = '1 year',
+                               expand = c(0.05,1))+ thema
+
+# Save plot 
+ggplot2::ggsave(
+  filename =  paste0(
+    alt_path,
+    "governabilidade/output/Plots/Legislativo/v7_atualizada",
+    "/plot03_legis.png"), 
+  width = 15, 
+  height = 7, 
+  dpi = 300, 
+  units = "in",
+  device='png')
+```
+
+
