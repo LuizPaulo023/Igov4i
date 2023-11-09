@@ -7,10 +7,10 @@ rm(list = ls())
 graphics.off()
 
 # Dependências
+# install.packages("devtools") // devtools devidamente instalado
+# devtools::install_github("LuizPaulo023/Igov4i", dependencies = T)
 
-
-pacman::p_load(tidyverse)
-library(Igov4i)
+pacman::p_load(tidyverse, Igov4i)
 
 # Dependências de construção
 # pacman::p_load(Igov4i, roxygen2, devtools)
