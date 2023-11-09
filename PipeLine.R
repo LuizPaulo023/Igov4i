@@ -81,7 +81,7 @@ indice_gov_modificado = Igov4i::igov_mod(indice_gov = indice_governabilidade)
 # SALVANDO ATUALIZAÇÕES
 # DEFININDO DIRETÓRIO:
 
-base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output"))
+base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data"))
 
 writexl::write_xlsx(igov_legislativo,'indice_legis.xlsx')
 writexl::write_xlsx(igov_judiciario,'indice_judiciario.xlsx')
