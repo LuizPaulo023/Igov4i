@@ -1,7 +1,10 @@
 #' @title {Igov4i}
 #' @author Luiz Paulo Tavares
 
-# Configurações de ambiente do usuário
+# Mantenha essa data sempre atualizada:
+# última atualização: 05/01/2024 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+# Configurações de ambiente do usuário =========================================
 
 rm(list = ls())
 graphics.off()
@@ -83,12 +86,14 @@ indice_gov_modificado = Igov4i::igov_mod(indice_gov = indice_governabilidade)
 
 base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data"))
 
+getwd() # Endereço onde será guardado os índices atualizados
+
 writexl::write_xlsx(igov_legislativo,'indice_legis.xlsx')
-writexl::write_xlsx(igov_judiciario,'indice_judiciario.xlsx')
 writexl::write_xlsx(igov_popularidade,'indice_pop.xlsx')
+writexl::write_xlsx(igov_judiciario,'indice_judiciario.xlsx')
 writexl::write_xlsx(indice_governabilidade,'indice_governabilidade.xlsx')
 writexl::write_xlsx(indice_gov_modificado,'indice_gov_modificado.xlsx')
 
 
-
-
+# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+# GERANDO OS PLOTES ============================================================
