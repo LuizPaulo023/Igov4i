@@ -113,22 +113,23 @@ thema = theme(legend.position = "bottom",
 
 ```{r}
 legislativo <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/outubro_2023/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
          'indice_legis.xlsx')
 ) %>% 
   select(date, gov, indice_legislativo)
 
 judiciario <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/outubro_2023/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
          'indice_judiciario.xlsx')
 ) %>% 
   select(date, indice_judiciario)
   
 popularidade <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/outubro_2023/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
          'indice_pop.xlsx')
 ) %>% 
   select(date, indice_pop)
+
 
 indice_gov <- legislativo %>% 
   full_join(judiciario) %>% 
@@ -144,160 +145,167 @@ indice_gov <- legislativo %>%
          Popularidade = indice_pop,
          Governabilidade = indice_governabilidade) %>% 
   filter(date >= '2003-01-01')
+
+getwd()
+
+saveRDS(indice_gov, "indice_governabilidade_revisada.rds")
+
+indice_gov <- indice_governabilidade
+
 ```
 
 ```{r}
-igov_geral <- indice_gov %>% 
-             dplyr::filter(gov == "Lula III") %>%
-             stats::na.omit() %>% 
-             rename("I-GOV" = "Governabilidade", 
-                    "Judiciário" = "Judiciario") %>% 
-             pivot_longer(cols = Legislativo:`I-GOV`) %>% 
-             dplyr::mutate(value = value*100) %>% 
-            mutate(index = ifelse(name != "I-GOV", "0", "1"))
+# igov_geral <- indice_gov %>% 
+#              dplyr::filter(gov == "Lula III") %>%
+#              stats::na.omit() %>% 
+#              rename("I-GOV" = "Governabilidade", 
+#                     "Judiciário" = "Judiciario") %>% 
+#              pivot_longer(cols = Legislativo:`I-GOV`) %>% 
+#              dplyr::mutate(value = value*100) %>% 
+#             mutate(index = ifelse(name != "I-GOV", "0", "1"))
 
 # Plote IGOV 
 
-igov_plot = ggplot(igov_geral) +
-  aes(x = name, y = value, fill = index) +
-  geom_col()+
-  scale_fill_manual(values = c(`0` = paleta$azul_4i,
-                               `1` = "orange"))+
-  ylim(0,100)+
-  labs(y = "%", 
-       x = "", fill = "")+
-  geom_text(aes(label = round(value,2), 
-                hjust = 0.5, 
-            vjust = 2.5), 
-            size = 3.0)+
-  xlim("I-GOV","Popularidade", "Judiciário", "Legislativo")+
-  theme(legend.position = "null", 
-        axis.text.x = element_text(size = 80))
+# igov_plot = ggplot(igov_geral) +
+#   aes(x = name, y = value, fill = index) +
+#   geom_col()+
+#   scale_fill_manual(values = c(`0` = paleta$azul_4i,
+#                                `1` = "orange"))+
+#   ylim(0,100)+
+#   labs(y = "%", 
+#        x = "", fill = "")+
+#   geom_text(aes(label = round(value,2), 
+#                 hjust = 0.5, 
+#             vjust = 2.5), 
+#             size = 3.0)+
+#   xlim("I-GOV","Popularidade", "Judiciário", "Legislativo")+
+#   theme(legend.position = "null", 
+#         axis.text.x = element_text(size = 80))
 
-parse_theme_4i(list(igov_plot),
-              title = "Índice de Governabilidade (I-GOV)",
-              subtitle = "O I-GOV é composto por três dimensões: popularidade, judiciário e legislativo.",
-              new_theme = F, file_format = "png")
-  
+# parse_theme_4i(list(igov_plot),
+#               title = "Índice de Governabilidade (I-GOV)",
+#               subtitle = "O I-GOV é composto por três dimensões: popularidade, judiciário e legislativo.",
+#               new_theme = F, file_format = "png")
+#   
 
 # Comparação entre governos 
 # Pegando os primeiros 6 meses de cada ano 
 
-igov_six <- indice_gov %>%
-            mutate(ano = lubridate::year(date), 
-                   mes = lubridate::month(date)) %>%
-            group_by(ano) %>%
-  filter(ano %in% c("2003", "2007", "2011",
-                              "2015", "2016", "2019",
-                              "2023")) %>% ungroup() %>%
-  filter(mes == 6) %>% arrange(desc(Governabilidade)) %>%
-  rename("I-GOV" = "Governabilidade",
-         "Judiciário" = "Judiciario") %>% 
-  pivot_longer(cols = Legislativo:`I-GOV`) %>% 
-  mutate(index = ifelse(gov == "Lula III", "atual", "anterior")) %>% 
-  mutate(value = value*100)
+# igov_six <- indice_gov %>%
+#             mutate(ano = lubridate::year(date), 
+#                    mes = lubridate::month(date)) %>%
+#             group_by(ano) %>%
+#   filter(ano %in% c("2003", "2007", "2011",
+#                               "2015", "2016", "2019",
+#                               "2023")) %>% ungroup() %>%
+#   filter(mes == 6) %>% arrange(desc(Governabilidade)) %>%
+#   rename("I-GOV" = "Governabilidade",
+#          "Judiciário" = "Judiciario") %>% 
+#   pivot_longer(cols = Legislativo:`I-GOV`) %>% 
+#   mutate(index = ifelse(gov == "Lula III", "atual", "anterior")) %>% 
+#   mutate(value = value*100)
 
         
 
 # Definir a ordem desejada
-ordem <- factor(c("Lula I", "Lula II", "Dilma I", "Dilma II", "Temer", "Bolsonaro", "Lula III"))
-
-
-six_plot = ggplot(igov_six) +
-   aes(x = factor(gov, levels = ordem), y = value, fill = index)+
-  geom_col() +
-  scale_fill_manual(
-    values = c(anterior = paleta$azul_4i,
-    atual = "orange")) +
-  geom_text(aes(label = round(value,2), 
-                vjust = 2.0, 
-                hjust = 0.5), 
-            size = 1.8)+
-  facet_wrap(vars(name))+
-  theme(legend.position = "none")+
-  labs(y = "%", x = "")
+# ordem <- factor(c("Lula I", "Lula II", "Dilma I", "Dilma II", "Temer", "Bolsonaro", "Lula III"))
+# 
+# 
+# six_plot = ggplot(igov_six) +
+#    aes(x = factor(gov, levels = ordem), y = value, fill = index)+
+#   geom_col() +
+#   scale_fill_manual(
+#     values = c(anterior = paleta$azul_4i,
+#     atual = "orange")) +
+#   geom_text(aes(label = round(value,2), 
+#                 vjust = 2.0, 
+#                 hjust = 0.5), 
+#             size = 1.8)+
+#   facet_wrap(vars(name))+
+#   theme(legend.position = "none")+
+#   labs(y = "%", x = "")
   
 
 
-parse_theme_4i(list(six_plot),
-              title = "I-GOV no mês de junho de cada governo",
-              subtitle = "Considerando junho do primeiro ano de cada governo",
-              new_theme = F, file_format = "png")
-
-
-six_plot_lateral = ggplot(igov_six) +
-   aes(x = factor(gov, levels = ordem), y = value, fill = index)+
-  geom_col() +
-  scale_fill_manual(
-    values = c(anterior = paleta$azul_4i,
-    atual = "orange")) +
-  geom_text(aes(label = round(value,2), 
-                vjust = 2.0, 
-                hjust = 0.5), 
-            size = 1.8)+
-  facet_wrap(vars(name), strip.position = "right")+
-  theme(legend.position = "none")+
-  labs(y = "%", x = "")
-          
-
-parse_theme_4i(list(six_plot_lateral),
-              title = "I-GOV  - teste lateral",
-              subtitle = "Considerando junho do primeiro ano de cada governo",
-              new_theme = F, file_format = "png")
-
-# Sem governabilidade geral 
-igov_six2 <- igov_six %>% 
-        filter(name != "I-GOV") %>% 
-  filter(gov != "Temer")
-
-six_plot_lateral_sem_gov = ggplot(igov_six2) +
-   aes(x = factor(gov, levels = ordem), y = value, fill = index)+
-  geom_col() +
-  scale_fill_manual(
-    values = c(anterior = paleta$azul_4i,
-    atual = "orange")) +
-  geom_text(aes(label = round(value,2), 
-                vjust = 2.0, 
-                hjust = 0.5), 
-            size = 1.8)+
-  facet_wrap(vars(name),ncol = 1,
-             strip.position = "right")+
-  theme(legend.position = "none")+
-  labs(y = "%", x = "")
-          
-parse_theme_4i(list(six_plot_lateral_sem_gov),
-              title = "Composição do I-GOV",
-              subtitle = "Considerando o mês de junho do primeiro ano de cada governo",
-              new_theme = F, file_format = "png")
+# parse_theme_4i(list(six_plot),
+#               title = "I-GOV no mês de junho de cada governo",
+#               subtitle = "Considerando junho do primeiro ano de cada governo",
+#               new_theme = F, file_format = "png")
+# 
+# 
+# six_plot_lateral = ggplot(igov_six) +
+#    aes(x = factor(gov, levels = ordem), y = value, fill = index)+
+#   geom_col() +
+#   scale_fill_manual(
+#     values = c(anterior = paleta$azul_4i,
+#     atual = "orange")) +
+#   geom_text(aes(label = round(value,2), 
+#                 vjust = 2.0, 
+#                 hjust = 0.5), 
+#             size = 1.8)+
+#   facet_wrap(vars(name), strip.position = "right")+
+#   theme(legend.position = "none")+
+#   labs(y = "%", x = "")
+#           
+# 
+# parse_theme_4i(list(six_plot_lateral),
+#               title = "I-GOV  - teste lateral",
+#               subtitle = "Considerando junho do primeiro ano de cada governo",
+#               new_theme = F, file_format = "png")
+# 
+# # Sem governabilidade geral 
+# igov_six2 <- igov_six %>% 
+#         filter(name != "I-GOV") %>% 
+#   filter(gov != "Temer")
+# 
+# six_plot_lateral_sem_gov = ggplot(igov_six2) +
+#    aes(x = factor(gov, levels = ordem), y = value, fill = index)+
+#   geom_col() +
+#   scale_fill_manual(
+#     values = c(anterior = paleta$azul_4i,
+#     atual = "orange")) +
+#   geom_text(aes(label = round(value,2), 
+#                 vjust = 2.0, 
+#                 hjust = 0.5), 
+#             size = 1.8)+
+#   facet_wrap(vars(name),ncol = 1,
+#              strip.position = "right")+
+#   theme(legend.position = "none")+
+#   labs(y = "%", x = "")
+#           
+# parse_theme_4i(list(six_plot_lateral_sem_gov),
+#               title = "Composição do I-GOV",
+#               subtitle = "Considerando o mês de junho do primeiro ano de cada governo",
+#               new_theme = F, file_format = "png")
 
 
 # 
 
-igov_six3 <- igov_six %>% 
-        filter(name == "I-GOV") %>%
-        filter(gov != "Temer")
-
-
-six_plot_lateral_sem_gov = ggplot(igov_six3) +
-   aes(x = factor(gov, levels = ordem), y = value, fill = index)+
-  geom_col() +
-  scale_fill_manual(
-    values = c(anterior = paleta$azul_4i,
-    atual = "orange")) +
-  geom_text(aes(label = round(value,2), 
-                vjust = 2.0, 
-                hjust = 0.5), 
-            size = 1.8)+
-  ylim(0,100)+
-  # facet_wrap(vars(name),ncol = 1,
-  #            strip.position = "right")+
-  theme(legend.position = "none")+
-  labs(y = "%", x = "")
-
-parse_theme_4i(list(six_plot_lateral_sem_gov),
-              title = "I-GOV - Comparação entre os governos",
-              subtitle = "Considerando o mês de junho do primeiro ano de cada governo",
-              new_theme = F, file_format = "png")
+# igov_six3 <- igov_six %>% 
+#         filter(name == "I-GOV") %>%
+#         filter(gov != "Temer")
+# 
+# 
+# six_plot_lateral_sem_gov = ggplot(igov_six3) +
+#    aes(x = factor(gov, levels = ordem), y = value, fill = index)+
+#   geom_col() +
+#   scale_fill_manual(
+#     values = c(anterior = paleta$azul_4i,
+#     atual = "orange")) +
+#   geom_text(aes(label = round(value,2), 
+#                 vjust = 2.0, 
+#                 hjust = 0.5), 
+#             size = 1.8)+
+#   ylim(0,100)+
+#   # facet_wrap(vars(name),ncol = 1,
+#   #            strip.position = "right")+
+#   theme(legend.position = "none")+
+#   labs(y = "%", x = "")
+# 
+# parse_theme_4i(list(six_plot_lateral_sem_gov),
+#               title = "I-GOV - Comparação entre os governos",
+#               subtitle = "Considerando o mês de junho do primeiro ano de cada governo",
+#               new_theme = F, file_format = "png")
 
 ```
 
@@ -335,6 +343,9 @@ writexl::write_xlsx(test,
 
 
 ```{r}
+
+# indice_gov <- indice_governabilidade
+
 indice_gov %>% 
   mutate(gov = factor(gov, c('Lula I', 'Lula II',
                              'Dilma I', 'Dilma II', 'Temer', 'Bolsonaro', 
@@ -361,7 +372,7 @@ indice_gov %>%
 ggplot2::ggsave(
   filename =  paste0(
     alt_path,
-    "governabilidade/output/Plots/IndiceGeral/",
+    "governabilidade/output/Plots/",
     "/plot_indice_geral.png"), 
   width = 15, 
   height = 7, 

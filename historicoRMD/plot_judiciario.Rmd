@@ -251,11 +251,14 @@ bd_index <- judiciario_sem_dup %>%
 #Não atribui peso diferente entre idv e col
 #Retorna alem do índice, qtd de ADi julgada no mes por favor/contra e indv/col 
 indice_judiciario <- calc_new_judiciario(bd_index, peso = 1)
+# indice_judiciario = 
 ```
 
 # Estoque de ADIs 
 
 ```{r}
+library(lubridate)
+
 estoque = tibble()
   
 for (dt in seq(min(
@@ -363,7 +366,7 @@ getwd()
 writexl::write_xlsx(output_completo,
                     paste0(alt_path,
                            'governabilidade/output/',
-                           'indice_judiciario_outubro.xlsx'))
+                           'indice_judiciario_revisado.xlsx'))
 ```
 
 # Visualização - Evolução do índice com qtd de ADIs favoraveis - plot01
@@ -423,7 +426,7 @@ estoque_semdec2 %>%
 ggplot2::ggsave(
   filename =  paste0(
     alt_path,
-    "governabilidade/output/Plots/Judiciario/",
+    "governabilidade/output/Plots/",
     "/plot_jud.png"), 
   width = 15, 
   height = 7, 

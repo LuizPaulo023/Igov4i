@@ -191,6 +191,10 @@ indice_legislativo_new <- calc_legislativo_new(df = base_legislativo,
                                                peso = 2) %>% 
                            dplyr::filter(gov != 'FHC')
 
+# setwd("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2024/fevereiro_2024")
+# 
+# indice_legislativo_new = indice_legis <- readxl::read_excel("indice_legis.xlsx")
+
 output_legislativo <- indice_legislativo_new %>% 
   select(date, gov,
          starts_with('value'), ends_with('peso'),
@@ -214,6 +218,9 @@ writexl::write_xlsx(output_legislativo,
 ## Duplica pura e emendada para gerar composição
 
 ```{r}
+indice_legislativo_new = igov_legislativo 
+
+
 
 bd_composicao = indice_legislativo_new %>% 
   dplyr::select(date, gov, indice_legislativo, pura_peso, emendada_peso) %>%
@@ -324,7 +331,7 @@ ggplot2::ggplot()+
 ggplot2::ggsave(
   filename =  paste0(
     alt_path,
-    "governabilidade/output/Plots/Legislativo/",
+    "governabilidade/output/Plots/",
     "/plot_legis.png"), 
   width = 15, 
   height = 7, 

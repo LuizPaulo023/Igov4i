@@ -1,9 +1,10 @@
-#' @title teste de consistência 
-#' @author Luiz Paulo T. Gonçalves 
+#' @title teste de consistência
+#' @author Luiz Paulo T. Gonçalves
 
 base::rm(list = ls())
 
 # Definindo diretório de trabalho ==============================================
+pacman::p_load(tidyverse)
 
 user = base::getwd() %>%
        stringr::str_extract("^((?:[^/]*/){3})") %>% print()
@@ -13,8 +14,8 @@ path = base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/d
 
 # Importando índices ===========================================================
 # Atualize os meses desejados \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-last_month = "outubro_2023"
-current_month = "dezembro_2023"
+last_month = "2024/fevereiro_2024"
+current_month = "2024/marco_2024"
 
 # Testando legislativo ==============================================================================
 
@@ -22,25 +23,26 @@ last_legis = readxl::read_excel(paste0(path, "/",last_month,"/","indice_legis.xl
 current_legis = readxl::read_excel(paste0(path, "/",current_month,"/","indice_legis.xlsx"))
 
 legis_consistency <- function(last, current){
-  
-  consistency = last %>% 
-                dplyr::select(date, indice_legislativo) %>% 
-                       rename(last_legis = indice_legislativo) %>% 
-                       left_join(current, by = "date") %>% 
-                       select(date, gov, last_legis, indice_legislativo) %>% 
+
+  consistency = last %>%
+                dplyr::select(date, indice_legislativo) %>%
+                       rename(last_legis = indice_legislativo) %>%
+                       left_join(current, by = "date") %>%
+                       select(date, gov, last_legis, indice_legislativo) %>%
                        rename(current_legis = indice_legislativo)
-  
-  test <- consistency %>% 
-          mutate(test_consistency = last_legis == current_legis) %>% 
+
+  test <- consistency %>%
+          mutate(test_consistency = last_legis == current_legis) %>%
           filter(test_consistency == FALSE)
-  
+
  return(test)
 
-  
-  
+
+
 }
 
 resul_legis = legis_consistency(last = last_legis, current = current_legis)
+resul_legis %>% glimpse()
 
 # Testando Opinião pública =====================================================
 
@@ -49,25 +51,49 @@ current_pop = readxl::read_excel(paste0(path, "/",current_month,"/","indice_pop.
 
 
 op_consistency <- function(last, current){
-  
-  consistency = last %>% 
-                dplyr::select(date, indice_pop) %>% 
-                rename(last_pop = indice_pop) %>% 
-                left_join(current, by = "date") %>% 
-                select(date, index, last_pop, indice_pop) %>% 
+
+  consistency = last %>%
+                dplyr::select(date, indice_pop) %>%
+                rename(last_pop = indice_pop) %>%
+                left_join(current, by = "date") %>%
+                select(date, index, last_pop, indice_pop) %>%
                 rename(current_pop = indice_pop)
-  
-  test <- consistency %>% 
-          dplyr::mutate(test_consistency = last_pop == current_pop) %>% 
+
+  test <- consistency %>%
+          dplyr::mutate(test_consistency = last_pop == current_pop) %>%
           filter(test_consistency == FALSE)
-  
-  
+
+
 return(test)
-  
+
 }
 
 result_op = op_consistency(last = last_pop, current = current_pop)
+result_op %>% glimpse()
+# Teste Judiciário =============================================================
+
+last_jud = readxl::read_excel(paste0(path, "/",last_month,"/","indice_judiciario_revisado.xlsx"))
+current_jud = readxl::read_excel(paste0(path, "/",current_month,"/","indice_judiciario.xlsx"))
+
+jud_consistency <- function(last, current){
+
+  consistency = last %>%
+                dplyr::select(date, indice_judiciario) %>%
+                rename(last_jud = indice_judiciario) %>%
+                left_join(current, by = "date") %>%
+                select(date, gov, last_jud, indice_judiciario) %>%
+                rename(current_jud = indice_judiciario)
+
+  test <- consistency %>%
+    mutate(test_consistency = last_jud == current_jud) %>%
+    filter(test_consistency == FALSE)
+
+  return(test)
 
 
 
+}
+
+result_jud = jud_consistency(last = last_jud, current = current_jud)
+result_jud %>% glimpse()
 

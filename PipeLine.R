@@ -2,7 +2,7 @@
 #' @author Luiz Paulo Tavares
 
 # Mantenha essa data sempre atualizada:
-# última atualização: 05/01/2024 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+# última atualização: 07/03/2024 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
 # Configurações de ambiente do usuário =========================================
 
@@ -70,7 +70,20 @@ tempo_medio <- Igov4i::jud_tempo_julgamento(judiciario_sem_dup)
 
 igov_judiciario = Igov4i::jud_output(estoque_semdec = estoque_adi, qtd_julgada_mes_tempo_medio = tempo_medio)
 
+# igov_judiciario = output_completo
+
 # Governabilidade4i ============================================================
+
+# \\\\\\\\\\\\\\\\ Não roda esse bloco só não for usar os xlsx da pasta
+# ATENÇÃO \\\\\\\\\\\\\\\\\\\\\\\\\
+
+rm(list = ls())
+
+setwd("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2024/marco_2024")
+
+igov_legislativo = readxl::read_excel("indice_legis.xlsx")
+igov_judiciario = readxl::read_excel("indice_judiciario.xlsx")
+igov_popularidade = readxl::read_excel("indice_pop.xlsx")
 
 indice_governabilidade = Igov4i::igov_geral(legislativo = igov_legislativo,
                                             judiciario = igov_judiciario,
@@ -88,12 +101,12 @@ base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_al
 
 getwd() # Endereço onde será guardado os índices atualizados
 
-writexl::write_xlsx(igov_legislativo,'indice_legis.xlsx')
 writexl::write_xlsx(igov_popularidade,'indice_pop.xlsx')
+writexl::write_xlsx(igov_legislativo,'indice_legis.xlsx')
 writexl::write_xlsx(igov_judiciario,'indice_judiciario.xlsx')
 writexl::write_xlsx(indice_governabilidade,'indice_governabilidade.xlsx')
 writexl::write_xlsx(indice_gov_modificado,'indice_gov_modificado.xlsx')
-
+saveRDS(indice_gov_modificado, "igov_modificado.rds")
 
 # \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 # GERANDO OS PLOTES ============================================================
