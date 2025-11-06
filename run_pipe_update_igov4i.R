@@ -2,7 +2,9 @@
 #' @author Luiz Paulo Tavares
 
 # Mantenha essa data sempre atualizada:
-# última atualização: 07/03/2024 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+# última atualização: 10/06/2025 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+# Thu Jan  9 09:07:24 2025 ------------------------------
 
 # Configurações de ambiente do usuário =========================================
 
@@ -27,7 +29,7 @@ user = base::getwd() %>%
        stringr::str_extract("^((?:[^/]*/){3})") %>% print()
 
 path = base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/input"))
-# print(path)
+path |> print()
 
 # Importando base de dados =====================================================
 
@@ -77,17 +79,20 @@ igov_judiciario = Igov4i::jud_output(estoque_semdec = estoque_adi, qtd_julgada_m
 # \\\\\\\\\\\\\\\\ Não roda esse bloco só não for usar os xlsx da pasta
 # ATENÇÃO \\\\\\\\\\\\\\\\\\\\\\\\\
 
-rm(list = ls())
+# rm(list = ls())
 
-setwd("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2024/marco_2024")
+# setwd("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2024/julho_2024")
+#
+# igov_legislativo = readxl::read_excel("indice_legis.xlsx")
+# igov_popularidade = readxl::read_excel("indice_pop.xlsx")
+# igov_judiciario = readxl::read_excel("indice_judiciario.xlsx")
 
-igov_legislativo = readxl::read_excel("indice_legis.xlsx")
-igov_judiciario = readxl::read_excel("indice_judiciario.xlsx")
-igov_popularidade = readxl::read_excel("indice_pop.xlsx")
 
-indice_governabilidade = Igov4i::igov_geral(legislativo = igov_legislativo,
-                                            judiciario = igov_judiciario,
-                                            popularidade = igov_popularidade)
+indice_governabilidade = igov_geral(legislativo = igov_legislativo,
+                                    judiciario = igov_judiciario,
+                                    popularidade = igov_popularidade)
+
+# indice_governabilidade <- indice_gov
 
 # Governabilidade41 Modificado
 
@@ -106,7 +111,5 @@ writexl::write_xlsx(igov_legislativo,'indice_legis.xlsx')
 writexl::write_xlsx(igov_judiciario,'indice_judiciario.xlsx')
 writexl::write_xlsx(indice_governabilidade,'indice_governabilidade.xlsx')
 writexl::write_xlsx(indice_gov_modificado,'indice_gov_modificado.xlsx')
-saveRDS(indice_gov_modificado, "igov_modificado.rds")
 
-# \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-# GERANDO OS PLOTES ============================================================
+

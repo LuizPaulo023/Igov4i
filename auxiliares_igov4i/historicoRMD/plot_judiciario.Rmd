@@ -61,6 +61,7 @@ packages <- c("tidyverse",
 
 library_packages(packages)
 ```
+
 # Tema 4i - theme()
 
 ```{r}
@@ -363,10 +364,11 @@ output_completo <- estoque_semdec %>%
 
 getwd()
 
+
 writexl::write_xlsx(output_completo,
                     paste0(alt_path,
                            'governabilidade/output/',
-                           'indice_judiciario_revisado.xlsx'))
+                           'indice_judiciario_recal.xlsx'))
 ```
 
 # Visualização - Evolução do índice com qtd de ADIs favoraveis - plot01
@@ -390,6 +392,7 @@ estoque_semdec2 = estoque_semdec %>%
 
 
 estoque_semdec2 %>% 
+  filter(date != "2024-06-01") %>% 
       dplyr::mutate(type2 = "") %>% 
   ggplot2::ggplot() +
   aes(x = date, y = indice_judiciario) +
@@ -427,7 +430,7 @@ ggplot2::ggsave(
   filename =  paste0(
     alt_path,
     "governabilidade/output/Plots/",
-    "/plot_jud.png"), 
+    "/plot_jud_maio.png"), 
   width = 15, 
   height = 7, 
   dpi = 300, 

@@ -2,8 +2,8 @@
 #' @author Luiz Paulo Tavares
 
 base::rm(list = ls())
-update = "marco_2024"
-diretorio = setwd(paste0("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2024/", update))
+update = "setembro"
+diretorio = setwd(paste0("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico/2025/", update))
 print(diretorio)
 
 # Dependências =================================================================
@@ -36,13 +36,42 @@ if(!is.null(arquivos)){
 setwd("C:/Users/LuizPauloTavaresGonç/4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico")
 getwd()
 
+
+# Índice de governabilidade geral \* ===========================================
+
+indice_governabilidade = indice_governabilidade %>%
+                         dplyr::mutate(across(-c(date, gov), ~ .*100))
+
+
 base::saveRDS(indice_governabilidade, "indice_governabilidade.rds")
+
+# Índice Judiciário - ADIs \* ==================================================
+
+indice_judiciario = indice_judiciario %>%
+                    dplyr::mutate(indice_judiciario = indice_judiciario*100)
+
+
 base::saveRDS(indice_judiciario, "indice_judiciario.rds")
+
+# Índice Legislativo - MPs \* ==================================================
+
+indice_legis = indice_legis %>%
+               dplyr::mutate(indice_legislativo = indice_legislativo*100)
+
 base::saveRDS(indice_legis, "indice_legis.rds")
 
-# índice modificado
+# Índice de popularidade \* ====================================================
 
-indice_gov_modificado <- indice_gov_modificado %>% stats::na.omit()
+indice_pop = indice_pop %>%
+             dplyr::mutate(indice_pop = indice_pop*100)
+
+base::saveRDS(indice_pop, "indice_pop.rds")
+
+# índice modificado \* =========================================================
+
+indice_gov_modificado <- indice_gov_modificado %>%
+                         stats::na.omit() %>%
+                         dplyr::mutate(across(-c(date, gov), ~. *100))
 
 base::saveRDS(indice_gov_modificado, "indice_gov_modificado.rds")
 

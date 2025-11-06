@@ -4,18 +4,23 @@
 base::rm(list = ls())
 
 # Definindo diretório de trabalho ==============================================
+
 pacman::p_load(tidyverse)
 
 user = base::getwd() %>%
        stringr::str_extract("^((?:[^/]*/){3})") %>% print()
 
 path = base::setwd(paste0(user, "4intelligence/IT Admin - Operacional/trabalho/dados_alternativos/governabilidade/output/Data/historico"))
-# print(path)
+print(path)
 
 # Importando índices ===========================================================
 # Atualize os meses desejados \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-last_month = "2024/fevereiro_2024"
-current_month = "2024/marco_2024"
+
+# Fri Dec  6 08:50:18 2024 ------------------------------
+# Thu Jan  9 09:16:50 2025 ------------------------------
+
+last_month = "2025/junho"
+current_month = "2025/julho"
 
 # Testando legislativo ==============================================================================
 
@@ -41,7 +46,10 @@ legis_consistency <- function(last, current){
 
 }
 
-resul_legis = legis_consistency(last = last_legis, current = current_legis)
+resul_legis = legis_consistency(last = last_legis,
+                                current = current_legis)
+
+length(row(resul_legis))
 resul_legis %>% glimpse()
 
 # Testando Opinião pública =====================================================
@@ -69,10 +77,12 @@ return(test)
 }
 
 result_op = op_consistency(last = last_pop, current = current_pop)
+
 result_op %>% glimpse()
+
 # Teste Judiciário =============================================================
 
-last_jud = readxl::read_excel(paste0(path, "/",last_month,"/","indice_judiciario_revisado.xlsx"))
+last_jud = readxl::read_excel(paste0(path, "/",last_month,"/","indice_judiciario.xlsx"))
 current_jud = readxl::read_excel(paste0(path, "/",current_month,"/","indice_judiciario.xlsx"))
 
 jud_consistency <- function(last, current){

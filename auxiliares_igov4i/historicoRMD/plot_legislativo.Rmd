@@ -332,7 +332,7 @@ ggplot2::ggsave(
   filename =  paste0(
     alt_path,
     "governabilidade/output/Plots/",
-    "/plot_legis.png"), 
+    "/plot_legis_maio.png"), 
   width = 15, 
   height = 7, 
   dpi = 300, 

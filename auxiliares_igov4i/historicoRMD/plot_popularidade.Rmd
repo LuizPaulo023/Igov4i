@@ -298,7 +298,7 @@ writexl::write_xlsx(mean_month,
 ############# Atualiza aqui ===============================
 
 indice_pop_dantas <- readxl::read_excel(paste0(alt_path,
-                                               'governabilidade/output/Data/historico/2024/marco_2024/',
+                                               'governabilidade/output/Data/historico/2024/maio_2024/',
                                                'indice_pop.xlsx')) %>% 
   mutate(date = as.Date(date),
          index = ifelse(date >= "2023-01-01", "Lula III", index), 
@@ -323,7 +323,7 @@ ggplot2::ggplot(indice_pop_dantas) +
 ggplot2::ggsave(filename =  paste0(
     alt_path,
     "governabilidade/output/Plots/",
-    "/plot_popularidade.png"),
+    "/plot_popularidade_maio.png"),
        width = 15,
        height = 7,
        dpi = 300, 

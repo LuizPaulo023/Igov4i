@@ -113,19 +113,19 @@ thema = theme(legend.position = "bottom",
 
 ```{r}
 legislativo <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/maio_2024/',
          'indice_legis.xlsx')
 ) %>% 
   select(date, gov, indice_legislativo)
 
 judiciario <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/maio_2024/',
          'indice_judiciario.xlsx')
 ) %>% 
   select(date, indice_judiciario)
   
 popularidade <- readxl::read_excel(
-  paste0(alt_path, 'governabilidade/output/Data/historico/2024/marco_2024/',
+  paste0(alt_path, 'governabilidade/output/Data/historico/2024/maio_2024/',
          'indice_pop.xlsx')
 ) %>% 
   select(date, indice_pop)
@@ -373,7 +373,7 @@ ggplot2::ggsave(
   filename =  paste0(
     alt_path,
     "governabilidade/output/Plots/",
-    "/plot_indice_geral.png"), 
+    "/plot_indice_geral_maio.png"), 
   width = 15, 
   height = 7, 
   dpi = 300, 
