@@ -69,7 +69,7 @@ depara_gov = df %>%
               dplyr::ungroup() %>%
               dplyr::mutate(media_bom = media_bom/100,
                             media_regular = media_regular/100,
-                            indice_pop = (media_bom + media_regular/2),
+                            indice_pop = (media_bom + (media_regular/2)),
                             date = as.Date(date),
                             index = factor(index,
                             levels = c('Lula',

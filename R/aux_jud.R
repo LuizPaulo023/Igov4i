@@ -69,13 +69,32 @@ aux_jud <- function(df, group_name = 'coletiva',
         date > '2010-12-01' &
           date <= '2014-12-01' ~ 'Dilma',
         date > '2014-12-01' &
-          date <= '2015-05-01' ~ 'Dilma',
-        date > '2015-05-01' &
+          date <= '2016-05-01' ~ 'Dilma',
+        date > '2016-05-01' &
           date <= '2018-12-01' ~ 'Temer',
         date > '2018-12-01' &
           date <= '2022-12-01' ~ 'Bolsonaro',
         date > '2022-12-01' ~ 'Lula III')
-    ) %>%
+    )
+
+
+  # Verifica se a data "2025-01-01" já existe no data.frame
+
+  if (!any(sub_indice$date == as.Date("2025-01-01"))) {
+
+    janeiro_2025 <- base::subset(sub_indice,
+                                 date == as.Date("2024-12-01")) %>%
+                    dplyr::mutate(date = as.Date("2025-01-01"),
+                                  value = 0)
+
+    # Adicionar janeiro/2025
+
+    sub_indice <- rbind(sub_indice, janeiro_2025)
+
+  }
+
+
+    sub_indice <- sub_indice %>%
     dplyr::group_by(name, gov) %>%
     dplyr::mutate(soma_movel = zoo::rollapply(value,
                                        width = 12,

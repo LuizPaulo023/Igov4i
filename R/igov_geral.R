@@ -13,7 +13,8 @@ igov_geral <- function(legislativo,judiciario, popularidade){
                 dplyr::full_join(popularidade) %>%
                 dplyr::rowwise() %>%
                 dplyr::mutate(indice_governabilidade = sum(indice_legislativo,indice_judiciario,indice_pop)/3,
-                dplyr::across(where(is.numeric), ~round(.x,2))) %>%
+                # dplyr::across(where(is.numeric), ~round(.x,2))
+                ) %>%
                 dplyr::ungroup() %>%
                 dplyr::rename(Judiciario = indice_judiciario,
                               Legislativo = indice_legislativo,
